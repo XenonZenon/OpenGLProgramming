@@ -8,34 +8,19 @@
 
 Shader::Shader(){}
 
-const char * Shader::readShader(std::string type, std::string filename){
+const char * Shader::readShader(std::string filename){
 
   const char * code;
   std::string temp;
   std::string line;
-
-  if (type == "vertex") {
-    std::ifstream file(filename);
-    if(file.is_open()){
-      while(getline(file, line)){
-        temp += line + "\n";
-      }
-      code = temp.c_str();
-    }
-    return code;
-  }
-  if(type == "fragment"){
-    std::ifstream file(filename);
-    if(file.is_open()){
-      while(getline(file, line)){
-        temp += line + "\n";
-      }
+  std::ifstream file(filename);
+  if(file.is_open()){
+    while(getline(file, line)){
+      temp += line + "\n";
     }
     code = temp.c_str();
-    return code;
   }
-
-  return 0;
+  return code;
 }
 
 unsigned int Shader::compileShader(std::string type, std::string filename){
