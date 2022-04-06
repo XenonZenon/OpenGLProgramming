@@ -12,7 +12,7 @@ private:
 public:
   Shader();
   ~Shader();
-  const char * readShader(std::string, std::string);
+  const char * readShader(std::string);
   unsigned int compileShader(std::string, std::string);
   void setVertexShader(std::string);
   void setFragmentShader(std::string);
