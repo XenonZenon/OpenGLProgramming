@@ -1,6 +1,7 @@
+#include "../header/shaderutility.h"
+#include "../header/objects.h"
 #include <iostream>
 #include <string>
-#include "../header/shaderutility.h"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -9,15 +10,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 int main(){
 
-  Shader shader;
-
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", nullptr, nullptr);
+  GLFWwindow* window = glfwCreateWindow(1200, 600, "OpenGL", nullptr, nullptr);
 
   if(window == nullptr)
   {
@@ -43,42 +42,88 @@ int main(){
   glDepthFunc(GL_LESS);
 
   float vertices[] = {
-    -0.5f, -0.5f, 0.0f,
+    0.5f, 0.5f, 0.0f,
     0.5f, -0.5f, 0.0f,
-    0.0f, 0.5f, 0.0f
+    -0.5f, -0.5f, 0.0f,
+    -0.5f, 0.5f, 0.0f
   };
 
-  GLuint VBO = 0;
-  glGenBuffers(1, &VBO);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), vertices, GL_STATIC_DRAW);
+  unsigned int indices[] = {
+    0, 1, 3,
+    1, 2, 3
+  };
 
-  GLuint VAO = 0;
-  glGenVertexArrays(1, &VAO);
-  glBindVertexArray(VAO);
-  glEnableVertexAttribArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+  float vertices_2[] = {
+    0.3f, 0.3f, 0.0f,
+    0.3f, -0.3f, 0.0f,
+    -0.3f, -0.3f, 0.0f,
+    -0.3f, 0.3f, 0.0f
+  };
 
-  shader.setVertexShader("source/shaders/vertex_shader.glsl");
-  shader.setFragmentShader("source/shaders/fragment_shader.glsl");
-  shader.setProgram();
+  unsigned int indices_2[] = {
+    0, 1, 3,
+    1, 2, 3
+  };
+
+  float firstTriangle[] = {
+      -0.9f, -0.8f, 0.0f,  // Left
+      -0.5f, -0.1f, 0.0f,  // Right
+      -0.1f, -0.8f, 0.0f,  // Top
+  };
+  float secondTriangle[] = {
+       0.0f, -0.5f, 0.0f,  // Left
+       0.9f, -0.5f, 0.0f,  // Right
+       0.45f, 0.5f, 0.0f   // Top
+  };
+
+/// Set Up
+  Shader shader("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl");
+  shader.deleteShader();
+
+  int size = 2;
+
+  VertexArrayObject vao(size);
+  VertexBufferObject vbo(size);
+
+  vao.generate(size);
+  vbo.generate(size);
+
+  vao.bind(0);
+  vbo.bind(0);
+  vao.buffer(firstTriangle, sizeof(firstTriangle));
+  vao.attribpointer(3 * sizeof(float));
+  vao.unbind();
+
+  vao.bind(1);
+  vbo.bind(1);
+  vao.buffer(secondTriangle, sizeof(secondTriangle));
+  vao.attribpointer(3 * sizeof(float));
+  vao.unbind();
+///
 
   while(!glfwWindowShouldClose(window))
   {
     ///
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+/// Render
     shader.useProgram(shader.getProgram());
-    glBindVertexArray(VAO);
+
+    vao.bind(0);
     glDrawArrays(GL_TRIANGLES, 0, 3);
-    shader.deleteShader();
-    ///
+    vao.bind(1);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    vao.unbind();
+///
     glfwPollEvents();
     glfwSetKeyCallback(window, key_callback);
     glfwSwapBuffers(window);
   }
+/// Clean Up
 
+  shader.deleteProgram(shader.getProgram());
+///
+  glfwDestroyWindow(window);
   glfwTerminate();
 
   return 0;
@@ -89,5 +134,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
   if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
   {
     glfwSetWindowShouldClose(window, GL_TRUE);
+  }
+  if(key == GLFW_KEY_A && action == GLFW_PRESS)
+  {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  }
+  if(key == GLFW_KEY_S && action == GLFW_PRESS)
+  {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   }
 }

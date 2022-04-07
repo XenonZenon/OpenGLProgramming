@@ -10,18 +10,16 @@ private:
   unsigned int program = 0;
 
 public:
-  Shader();
-  ~Shader();
+  Shader(std::string, std::string);
   const char * readShader(std::string);
   unsigned int compileShader(std::string, std::string);
-  void setVertexShader(std::string);
-  void setFragmentShader(std::string);
-  void setProgram();
   void useProgram(unsigned int);
   unsigned int getVertex(){ return vertex; }
-  unsigned int getFragment(){return fragment; }
+  unsigned int getFragment(){ return fragment; }
   unsigned int getProgram(){ return program; }
+  void deleteProgram(unsigned int);
   void deleteShader();
+  ~Shader();
 };
 
 #endif
