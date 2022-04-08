@@ -1,7 +1,9 @@
-#include "../header/shaderutility.h"
-#include "../header/objects.h"
+#include "../header/noysoft/shaderutility.h"
+#include "../header/noysoft/objects.h"
+#include "../header/noysoft/texture.h"
 #include <iostream>
 #include <string>
+#include <cmath>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -16,7 +18,7 @@ int main(){
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  GLFWwindow* window = glfwCreateWindow(1200, 600, "OpenGL", nullptr, nullptr);
+  GLFWwindow* window = glfwCreateWindow(1200, 620, "OpenGL", nullptr, nullptr);
 
   if(window == nullptr)
   {
@@ -42,77 +44,136 @@ int main(){
   glDepthFunc(GL_LESS);
 
   float vertices[] = {
-    0.5f, 0.5f, 0.0f,
-    0.5f, -0.5f, 0.0f,
-    -0.5f, -0.5f, 0.0f,
-    -0.5f, 0.5f, 0.0f
+    -0.2f, 0.3f, 0.0f,  1.0f, 0.0f, 0.0f,   1.0f, 1.0f,
+    -0.2f, -0.3f, 0.0f,  0.0f, 1.0f, 0.0f,   1.0f, 0.0f,
+    -0.8f, -0.3f, 0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f,
+    -0.8f, 0.3f, 0.0f,  1.0f, 1.0f, 0.0f,   0.0f, 1.0f
   };
 
-  unsigned int indices[] = {
-    0, 1, 3,
-    1, 2, 3
-  };
+
 
   float vertices_2[] = {
-    0.3f, 0.3f, 0.0f,
-    0.3f, -0.3f, 0.0f,
-    -0.3f, -0.3f, 0.0f,
-    -0.3f, 0.3f, 0.0f
+    0.8f, 0.3f, 0.0f,  1.0f, 0.0f, 0.0f,   1.0f, 1.0f,
+    0.8f, -0.3f, 0.0f,  0.0f, 1.0f, 0.0f,   1.0f, 0.0f,
+    0.2f, -0.3f, 0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f,
+    0.2f, 0.3f, 0.0f,  1.0f, 1.0f, 0.0f,   0.0f, 1.0f
   };
 
-  unsigned int indices_2[] = {
+  float square[] = {
+    // Positions          // Colors           // Texture Coords
+    0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // Top Right
+    0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // Bottom Right
+    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // Bottom Left
+    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // Top Left
+  };
+
+  int indices[] = {
     0, 1, 3,
-    1, 2, 3
-  };
-
-  float firstTriangle[] = {
-      -0.9f, -0.8f, 0.0f,  // Left
-      -0.5f, -0.1f, 0.0f,  // Right
-      -0.1f, -0.8f, 0.0f,  // Top
-  };
-  float secondTriangle[] = {
-       0.0f, -0.5f, 0.0f,  // Left
-       0.9f, -0.5f, 0.0f,  // Right
-       0.45f, 0.5f, 0.0f   // Top
+    3, 1, 2
   };
 
 /// Set Up
-  Shader shader("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl");
+  Shader shader("assets/shaders/vertex_shader.glsl", "assets/shaders/fragment_shader.glsl");
   shader.deleteShader();
 
-  int size = 2;
+  int size = 3;
 
   VertexArrayObject vao(size);
   VertexBufferObject vbo(size);
+  ElementBufferObject ebo(size);
 
   vao.generate(size);
   vbo.generate(size);
+  ebo.generate(size);
 
   vao.bind(0);
   vbo.bind(0);
-  vao.buffer(firstTriangle, sizeof(firstTriangle));
-  vao.attribpointer(3 * sizeof(float));
+  vbo.buffer(vertices, sizeof(vertices));
+  ebo.bind(0);
+  ebo.buffer(indices, sizeof(indices));
+  vao.attribpointer(0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
+  vao.attribarray(0);
+  vao.attribarray(1);
+  vao.attribpointer(2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+  vao.attribarray(2);
   vao.unbind();
 
   vao.bind(1);
   vbo.bind(1);
-  vao.buffer(secondTriangle, sizeof(secondTriangle));
-  vao.attribpointer(3 * sizeof(float));
+  vbo.buffer(vertices_2, sizeof(vertices_2));
+  ebo.bind(1);
+  ebo.buffer(indices, sizeof(indices));
+  vao.attribpointer(0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
+  vao.attribarray(0);
+  vao.attribarray(1);
+  vao.attribpointer(2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+  vao.attribarray(2);
   vao.unbind();
-///
+
+//with texture
+  vao.bind(2);
+  vbo.bind(2);
+  vbo.buffer(square, sizeof(square));
+  ebo.bind(2);
+  ebo.buffer(indices, sizeof(indices));
+  vao.attribpointer(0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
+  vao.attribarray(0);
+  vao.attribarray(1);
+  vao.attribpointer(2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+  vao.attribarray(2);
+  vao.unbind();
+
+/// Texture
+  Texture texture(3);
+
+  texture.generate(3);
+
+  texture.bind(0);
+  texture.parameters();
+  texture.setTexture("assets/images/wall.jpg");
+  texture.clean();
+  texture.unbind();
+
+  texture.bind(1);
+  texture.parameters();
+  texture.setTexture("assets/images/wood.jpg");
+  texture.clean();
+  texture.unbind();
+
+  texture.bind(2);
+  texture.parameters();
+  texture.setTexture("assets/images/ice.jpg");
+  texture.clean();
+  texture.unbind();
+
+  int nrAtrributes;
+  glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAtrributes);
+  std::cout << "Maximum nr of vertex attributes supported." << nrAtrributes << std::endl;
 
   while(!glfwWindowShouldClose(window))
   {
-    ///
+
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+/// Shader Program
+    shader.useProgram();
 /// Render
-    shader.useProgram(shader.getProgram());
-
+    texture.bind(0);
+    glUniform1i(glGetUniformLocation(shader.getProgram(), "unitexture"), 0);
     vao.bind(0);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    vao.unbind();
+
+    texture.bind(1);
+    glUniform1i(glGetUniformLocation(shader.getProgram(), "unitexture"), 0);
     vao.bind(1);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    vao.unbind();
+
+    texture.bind(2);
+    glUniform1i(glGetUniformLocation(shader.getProgram(), "unitexture"), 0);
+    vao.bind(2);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     vao.unbind();
 ///
     glfwPollEvents();
@@ -120,8 +181,10 @@ int main(){
     glfwSwapBuffers(window);
   }
 /// Clean Up
-
   shader.deleteProgram(shader.getProgram());
+  vao.clean(size);
+  vbo.clean(size);
+  ebo.clean(size);
 ///
   glfwDestroyWindow(window);
   glfwTerminate();
@@ -142,5 +205,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
   if(key == GLFW_KEY_S && action == GLFW_PRESS)
   {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  }
+  if(key == GLFW_KEY_V && action == GLFW_PRESS)
+  {
+    glViewport(350, 50, 500, 500);
+  }
+  if(key == GLFW_KEY_C && action == GLFW_PRESS)
+  {
+    glViewport(0, 0, 1200, 620);
   }
 }
