@@ -1,4 +1,4 @@
-# OpenGLProgramming
+# OpenGL Programming
 
 <h5>
   <ul>
