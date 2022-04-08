@@ -13,6 +13,8 @@ Shader::Shader(std::string vertexsource, std::string fragmentsource){
   glAttachShader(this->program, this->vertex);
   glAttachShader(this->program, this->fragment);
   glLinkProgram(this->program);
+  glDeleteShader(this->vertex);
+  glDeleteShader(this->fragment);
 }
 
 const char * Shader::readShader(std::string filepath){
@@ -56,11 +58,6 @@ void Shader::useProgram(){
 
 void Shader::deleteProgram(unsigned int program){
   glDeleteProgram(program);
-}
-
-void Shader::deleteShader(){
-  glDeleteShader(this->vertex);
-  glDeleteShader(this->fragment);
 }
 
 Shader::~Shader(){}

@@ -1,6 +1,11 @@
 #include "../header/noysoft/shaderutility.h"
 #include "../header/noysoft/objects.h"
 #include "../header/noysoft/texture.h"
+
+#include "../header/glm/glm.hpp"
+#include "../header/glm/gtc/matrix_transform.hpp"
+#include "../header/glm/gtc/type_ptr.hpp"
+
 #include <iostream>
 #include <string>
 #include <cmath>
@@ -10,6 +15,9 @@
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
+const unsigned int width = 1200;
+const unsigned int height = 620;
+
 int main(){
 
   glfwInit();
@@ -18,7 +26,7 @@ int main(){
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  GLFWwindow* window = glfwCreateWindow(1200, 620, "OpenGL", nullptr, nullptr);
+  GLFWwindow* window = glfwCreateWindow(width, height, "OpenGL", nullptr, nullptr);
 
   if(window == nullptr)
   {
@@ -29,104 +37,96 @@ int main(){
 
   glfwMakeContextCurrent(window);
 
-  if(glewInit() != GLEW_OK)
-  {
-    std::cout << "Failed to initialize GLEW" << std::endl;
-    return -1;
-  }
+  glfwSetKeyCallback(window, key_callback);
 
-  const GLubyte* renderer = glGetString(GL_RENDERER);
-  const GLubyte* version = glGetString(GL_VERSION);
-  printf("Render: %s\n", renderer);
-  printf("OpenGL version supported %s\n", version);
+  glewExperimental = GL_TRUE;
+
+  glewInit();
+
+  glViewport(0, 0, width, height);
 
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
 
+  const GLubyte* renderer = glGetString(GL_RENDERER);
+  const GLubyte* version = glGetString(GL_VERSION);
+  std::cout << "Render: " << renderer << std::endl;
+  std::cout << "OpenGL version supported " << version << std::endl;
+
+  Shader shader("assets/shaders/vertex_shader.glsl", "assets/shaders/fragment_shader.glsl");
+
   float vertices[] = {
-    -0.2f, 0.3f, 0.0f,  1.0f, 0.0f, 0.0f,   1.0f, 1.0f,
-    -0.2f, -0.3f, 0.0f,  0.0f, 1.0f, 0.0f,   1.0f, 0.0f,
-    -0.8f, -0.3f, 0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f,
-    -0.8f, 0.3f, 0.0f,  1.0f, 1.0f, 0.0f,   0.0f, 1.0f
-  };
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
 
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-  float vertices_2[] = {
-    0.8f, 0.3f, 0.0f,  1.0f, 0.0f, 0.0f,   1.0f, 1.0f,
-    0.8f, -0.3f, 0.0f,  0.0f, 1.0f, 0.0f,   1.0f, 0.0f,
-    0.2f, -0.3f, 0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f,
-    0.2f, 0.3f, 0.0f,  1.0f, 1.0f, 0.0f,   0.0f, 1.0f
-  };
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-  float square[] = {
-    // Positions          // Colors           // Texture Coords
-    0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // Top Right
-    0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // Bottom Right
-    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // Bottom Left
-    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // Top Left
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
   };
 
   int indices[] = {
     0, 1, 3,
-    3, 1, 2
+    1, 2, 3
   };
 
-/// Set Up
-  Shader shader("assets/shaders/vertex_shader.glsl", "assets/shaders/fragment_shader.glsl");
-  shader.deleteShader();
+  VertexArrayObject vao(1);
+  VertexBufferObject vbo(1);
+  ElementBufferObject ebo(1);
 
-  int size = 3;
-
-  VertexArrayObject vao(size);
-  VertexBufferObject vbo(size);
-  ElementBufferObject ebo(size);
-
-  vao.generate(size);
-  vbo.generate(size);
-  ebo.generate(size);
+  vao.generate(1);
+  vbo.generate(1);
+  ebo.generate(1);
 
   vao.bind(0);
   vbo.bind(0);
   vbo.buffer(vertices, sizeof(vertices));
   ebo.bind(0);
   ebo.buffer(indices, sizeof(indices));
-  vao.attribpointer(0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
+  vao.attribpointer(0, 3, GL_FLOAT, 5 * sizeof(float), (void*)0);
   vao.attribarray(0);
-  vao.attribarray(1);
-  vao.attribpointer(2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-  vao.attribarray(2);
-  vao.unbind();
-
-  vao.bind(1);
-  vbo.bind(1);
-  vbo.buffer(vertices_2, sizeof(vertices_2));
-  ebo.bind(1);
-  ebo.buffer(indices, sizeof(indices));
-  vao.attribpointer(0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
-  vao.attribarray(0);
-  vao.attribarray(1);
-  vao.attribpointer(2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-  vao.attribarray(2);
-  vao.unbind();
-
-//with texture
-  vao.bind(2);
-  vbo.bind(2);
-  vbo.buffer(square, sizeof(square));
-  ebo.bind(2);
-  ebo.buffer(indices, sizeof(indices));
-  vao.attribpointer(0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
-  vao.attribarray(0);
-  vao.attribarray(1);
-  vao.attribpointer(2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+  vao.attribpointer(2, 2, GL_FLOAT, 5 * sizeof(float), (void*)(3 * sizeof(float)));
   vao.attribarray(2);
   vao.unbind();
 
 /// Texture
-  Texture texture(3);
+  Texture texture(2);
 
-  texture.generate(3);
+  texture.generate(2);
 
   texture.bind(0);
   texture.parameters();
@@ -136,55 +136,62 @@ int main(){
 
   texture.bind(1);
   texture.parameters();
-  texture.setTexture("assets/images/wood.jpg");
+  texture.setTexture("assets/images/awesomeface.png");
   texture.clean();
   texture.unbind();
 
-  texture.bind(2);
-  texture.parameters();
-  texture.setTexture("assets/images/ice.jpg");
-  texture.clean();
-  texture.unbind();
+  glm::mat4 model = glm::mat4(1.0f);
+  glm::mat4 view = glm::mat4(1.0f);
+  glm::mat4 projection;
 
-  int nrAtrributes;
-  glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAtrributes);
-  std::cout << "Maximum nr of vertex attributes supported." << nrAtrributes << std::endl;
+  model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+  view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+  projection = glm::perspective(glm::radians(45.0f), (float)width/(float)height, 0.1f, 100.0f);
+
+  int modellocation = glGetUniformLocation(shader.getProgram(), "model");
+  int viewlocation= glGetUniformLocation(shader.getProgram(), "view");
+  int projlocation = glGetUniformLocation(shader.getProgram(), "projection");
+
+  int transformlocation = glGetUniformLocation(shader.getProgram(), "transform");
 
   while(!glfwWindowShouldClose(window))
   {
+    glfwPollEvents();
 
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-/// Shader Program
+
     shader.useProgram();
-/// Render
+
+    /// Texture
+    glActiveTexture(GL_TEXTURE0);
     texture.bind(0);
-    glUniform1i(glGetUniformLocation(shader.getProgram(), "unitexture"), 0);
-    vao.bind(0);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    vao.unbind();
-
+    glUniform1i(glGetUniformLocation(shader.getProgram(), "unitexture1"), 0);
+    glActiveTexture(GL_TEXTURE1);
     texture.bind(1);
-    glUniform1i(glGetUniformLocation(shader.getProgram(), "unitexture"), 0);
-    vao.bind(1);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glUniform1i(glGetUniformLocation(shader.getProgram(), "unitexture2"), 1);
+
+    glm::mat4 transform = glm::mat4(1.0f);
+    transform = glm::rotate(transform, glm::radians((float)glfwGetTime() * 50.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    /// Matrix
+    glUniformMatrix4fv(modellocation, 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(viewlocation, 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(projlocation, 1, GL_FALSE, glm::value_ptr(projection));
+    glUniformMatrix4fv(transformlocation, 1, GL_FALSE, glm::value_ptr(transform));
+
+    vao.bind(0);
+    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
     vao.unbind();
 
-    texture.bind(2);
-    glUniform1i(glGetUniformLocation(shader.getProgram(), "unitexture"), 0);
-    vao.bind(2);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    vao.unbind();
-///
-    glfwPollEvents();
-    glfwSetKeyCallback(window, key_callback);
     glfwSwapBuffers(window);
   }
 /// Clean Up
   shader.deleteProgram(shader.getProgram());
-  vao.clean(size);
-  vbo.clean(size);
-  ebo.clean(size);
+  vao.clean(1);
+  vbo.clean(1);
+  ebo.clean(1);
 ///
   glfwDestroyWindow(window);
   glfwTerminate();
@@ -208,10 +215,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
   }
   if(key == GLFW_KEY_V && action == GLFW_PRESS)
   {
-    glViewport(350, 50, 500, 500);
+
   }
   if(key == GLFW_KEY_C && action == GLFW_PRESS)
   {
-    glViewport(0, 0, 1200, 620);
+
   }
 }

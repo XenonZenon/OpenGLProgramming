@@ -29,7 +29,7 @@ void Texture::parameters(){
 }
 
 void Texture::setTexture(std::string filepath){
-  this->image = stbi_load(filepath.c_str(), &this->width, &this->height, &this->channels, 0);
+  this->image = stbi_load(filepath.c_str(), &this->width, &this->height, &this->channels, STBI_rgb);
   if(this->image == NULL){
     std::cout << "//////////////////////////////////" << std::endl;
     std::cout << "/// MAY MALI: loading image... ///" << std::endl;
