@@ -18,7 +18,6 @@ public:
   unsigned int getFragment(){ return fragment; }
   unsigned int getProgram(){ return program; }
   void deleteProgram(unsigned int);
-  void deleteShader();
   ~Shader();
 };
 
