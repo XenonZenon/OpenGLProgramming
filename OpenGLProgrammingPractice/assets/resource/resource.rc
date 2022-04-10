@@ -1,0 +1,24 @@
+1 ICON "icon/noysoft.ico"
+2 VERSIONINFO
+FILEVERSION     0,1
+PRODUCTVERSION  0,1
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "080904E4"
+    BEGIN
+      VALUE "CompanyName", "Noysoft"
+      VALUE "FileDescription", "OpenGL Programming Practice"
+      VALUE "FileVersion", "0.1"
+      VALUE "InternalName", "OpenGL"
+      VALUE "LegalCopyright", "Xenon Zenon"
+      VALUE "OriginalFilename", "OpenGLProgramming.exe"
+      VALUE "ProductName", "OpenGL Programming"
+      VALUE "ProductVersion", "0.1"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x809, 1252
+  END
+END
