@@ -1,19 +1,20 @@
 # OpenGL Version 4.6.0
+path := ../OpenGLProgrammingPractice
 appname := OpenGLPractice
-assets := ../OpenGLProgrammingPractice/assets
-source := ../OpenGLProgrammingPractice/source
-header := ../OpenGLProgrammingPractice/header
-build_objects := ../OpenGLProgrammingPractice/build/objects
-build_debug := ../OpenGLProgrammingPractice/build/debug
-objects := 	resource.res \
-						main.o \
-						headercollection.o \
-						shaderutility.o \
-						dataobjects.o \
-						texture.o \
-						camera.o \
-						light.o \
-						model.o
+assets := $(path)/assets
+source := $(path)/source
+header := $(path)/header
+build_objects := $(path)/build/objects
+build_debug := $(path)/build/debug
+objects := resource.res \
+		main.o \
+		headercollection.o \
+		shaderutility.o \
+		dataobjects.o \
+		texture.o \
+		camera.o \
+		light.o \
+		model.o
 c_flags := -O3 -Wall -std=c++1z -static-libstdc++ -static-libgcc
 windows_flag  := -mwindows
 link := -lglew32 -lglfw3dll -lopengl32 -lglu32 -lglut32 -lgdi32 -luser32 -lkernel32
